@@ -1,5 +1,5 @@
 from flask import Flask
-# from flask_marshmallow import Marshmallow
+from flask_marshmallow import Marshmallow
 import os
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -9,7 +9,7 @@ from app.config import config
 db = SQLAlchemy()
 migrate = Migrate()
 cache = Cache()
-# ma = Marshmallow()
+ma = Marshmallow()
 
 def create_app():
     app_context = os.getenv('FLASK_CONTEXT')
@@ -19,7 +19,7 @@ def create_app():
 
     db.init_app(app)
     migrate.init_app(app, db)
-    # ma.init_app(app)
+    ma.init_app(app)
     cache.init_app(app, config={
         'CACHE_TYPE': 'RedisCache',
         'CACHE_DEFAULT_TIMEOUT': 300,

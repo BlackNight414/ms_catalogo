@@ -4,17 +4,18 @@ from flask import jsonify, make_response, request
 from app.models import Producto
 from app.services import CatalogoService
 from app import cache
+from app.mapping import ProductoSchema
 
 catalogo = Blueprint('catalogo', __name__)
 
 catalogo_service = CatalogoService()
+producto_schema = ProductoSchema()
 
 @catalogo.route('/get_all', methods=['GET'])
 def get_all():
     productos = catalogo_service.get_all()
-    return productos
-
-
+    return producto_schema.dump(productos, many=True), 200
+    
 @catalogo.route('/get_by_id/<int:id>', methods=['GET'])
 def get_by_id(id: int):
 
@@ -25,23 +26,19 @@ def get_by_id(id: int):
         cache.set(f'producto_id_{producto.id}', producto, timeout=60)
 
     if producto:
-        resp = jsonify({
-            'id': producto.id,
-            'nombre': producto.nombre,
-            'precio': producto.precio,
-            'activado': producto.activado
-        })
-        return make_response(resp), 200
+        return producto_schema.dump(producto), 200
     else:
         return make_response(jsonify({'msg': 'NOT FOUND'})), 200
     
-@catalogo.route('/add', methods=['POST'])
-def add():
+@catalogo.route('/registrar_producto', methods=['POST'])
+def registrar_producto():
     datos_producto = request.get_json()
 
-    producto = Producto(**datos_producto)
-    catalogo_service.add(producto)
-    return jsonify('Producto insertado en la BD')
+    try:
+        producto = catalogo_service.registrar_producto(producto_schema.load(datos_producto))
+        return producto_schema.dump(), 200
+    except:
+        return jsonify('No se pudo insertar el producto'), 500
 
     
 

@@ -6,7 +6,7 @@ class CatalogoService:
     def __init__(self):
         self.catalogo_repository = CatalogoRepository()
 
-    def add(self, producto: Producto):
+    def registrar_producto(self, producto: Producto):
         return self.catalogo_repository.add(producto)
 
     def get_all(self):
