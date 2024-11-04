@@ -3,7 +3,6 @@ from flask import jsonify, make_response, request
 
 from app.models import Producto
 from app.services import CatalogoService
-from app import cache
 from app.mapping import ProductoSchema
 
 catalogo = Blueprint('catalogo', __name__)
@@ -19,11 +18,7 @@ def get_all():
 @catalogo.route('/get_by_id/<int:id>', methods=['GET'])
 def get_by_id(id: int):
 
-    # Duda: ¿Cache idealmente va en las rutas o en los métodos de services?
-    producto = cache.get(f'producto_id_{id}')
-    if producto is None:
-        producto = catalogo_service.get_by_id(id)
-        cache.set(f'producto_id_{producto.id}', producto, timeout=60)
+    producto = catalogo_service.get_by_id(id)
 
     if producto:
         return producto_schema.dump(producto), 200
@@ -36,8 +31,9 @@ def registrar_producto():
 
     try:
         producto = catalogo_service.registrar_producto(producto_schema.load(datos_producto))
-        return producto_schema.dump(), 200
-    except:
+        return producto_schema.dump(producto), 200
+    except Exception as e:
+        print(e)
         return jsonify('No se pudo insertar el producto'), 500
 
     
